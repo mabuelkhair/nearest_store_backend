@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
@@ -22,3 +23,36 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password')
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField(
+            required=True,
+            max_length=32
+            )
+    password = serializers.CharField(required=True, min_length=8, write_only=True)
+
+
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(style={'input_type': 'password'})
+
+    def _validate_username(self, username, password):
+        user = None
+
+        if username and password:
+            user = authenticate(username=username, password=password)
+        else:
+            msg = _('Must include "username" and "password".')
+            raise exceptions.ValidationError(msg)
+
+        return user
+
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+        user = self._validate_username(username, password)
+        attrs['user'] = user
+        return attrs
