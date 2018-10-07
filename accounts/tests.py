@@ -8,8 +8,10 @@ from rest_framework.authtoken.models import Token
 class AccountsTest(APITestCase):
     def setUp(self):
         self.test_user = User.objects.create_user('testuser', 'test@example.com', 'testpassword')
+        self.token, _ = Token.objects.get_or_create(user=self.test_user)
         self.create_url = reverse('register')
         self.login_url = reverse('login')
+        self.logout_url = reverse('logout')
 
     def test_create_user(self):
 
@@ -163,3 +165,18 @@ class AccountsTest(APITestCase):
 
         response = self.client.post(self.login_url , data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+
+    def test_logout_user(self):
+
+        data = {
+            'token': self.token.key
+        }
+
+        self.assertEqual(Token.objects.filter(user=self.test_user).count(), 1)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        response = self.client.post(self.logout_url , data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Token.objects.filter(user=self.test_user).count(), 0)
