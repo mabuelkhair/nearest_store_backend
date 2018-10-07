@@ -8,7 +8,9 @@ class UserSerializer(serializers.ModelSerializer):
             validators=[UniqueValidator(queryset=User.objects.all())]
             )
     username = serializers.CharField(
+            max_length=32,
             validators=[UniqueValidator(queryset=User.objects.all())]
+
             )
     password = serializers.CharField(min_length=8, write_only=True)
 
