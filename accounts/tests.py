@@ -2,6 +2,8 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
 from rest_framework import status
+from rest_framework.authtoken.models import Token
+
 
 class AccountsTest(APITestCase):
     def setUp(self):
@@ -26,6 +28,9 @@ class AccountsTest(APITestCase):
         self.assertEqual(response.data['username'], data['username'])
         self.assertEqual(response.data['email'], data['email'])
         self.assertFalse('password' in response.data)
+        user = User.objects.latest('id')
+        token = Token.objects.get(user=user)
+        self.assertEqual(response.data['token'], token.key)
 
     def test_create_user_with_short_password(self):
 
