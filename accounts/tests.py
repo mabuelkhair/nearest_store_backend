@@ -177,6 +177,18 @@ class AccountsTest(APITestCase):
         self.assertEqual(Token.objects.filter(user=self.test_user).count(), 1)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
         response = self.client.post(self.logout_url , data, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Token.objects.filter(user=self.test_user).count(), 0)
+
+
+    def test_logout_with_invalid_token(self):
+
+        data = {
+            'token': self.token.key
+        }
+
+        self.assertEqual(Token.objects.filter(user=self.test_user).count(), 1)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + "anytoken")
+        response = self.client.post(self.logout_url , data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(Token.objects.filter(user=self.test_user).count(), 1)

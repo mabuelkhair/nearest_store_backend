@@ -32,3 +32,12 @@ class Login(ObtainAuthToken):
                 json['token'] = token.key
                 return Response(json, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class Logout(APIView):
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_anonymous:
+            request.user.auth_token.delete()
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
