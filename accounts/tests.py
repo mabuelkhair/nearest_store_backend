@@ -21,13 +21,13 @@ class AccountsTest(APITestCase):
             'password': 'password'
         }
 
-        response = self.client.post(self.create_url , data, format='json')
+        response = self.client.post(self.create_url, data, format='json')
 
         # make sure we have two users in the database.
         self.assertEqual(User.objects.count(), 2)
         # assert returning a 201 created code.
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        #return the username and email upon successful creation and no password returned.
+        # return the username and email upon successful creation and no password returned.
         self.assertEqual(response.data['username'], data['username'])
         self.assertEqual(response.data['email'], data['email'])
         self.assertFalse('password' in response.data)
@@ -38,9 +38,9 @@ class AccountsTest(APITestCase):
     def test_create_user_with_short_password(self):
 
         data = {
-                'username': 'foobar',
-                'email': 'foobarbaz@example.com',
-                'password': 'foo'
+            'username': 'foobar',
+            'email': 'foobarbaz@example.com',
+            'password': 'foo'
         }
 
         response = self.client.post(self.create_url, data, format='json')
@@ -50,9 +50,9 @@ class AccountsTest(APITestCase):
 
     def test_create_user_with_no_password(self):
         data = {
-                'username': 'foobar',
-                'email': 'foobarbaz@example.com',
-                'password': ''
+            'username': 'foobar',
+            'email': 'foobarbaz@example.com',
+            'password': ''
         }
 
         response = self.client.post(self.create_url, data, format='json')
@@ -62,7 +62,7 @@ class AccountsTest(APITestCase):
 
     def test_create_user_with_too_long_username(self):
         data = {
-            'username': 'foo'*30,
+            'username': 'foo' * 30,
             'email': 'foobarbaz@example.com',
             'password': 'foobar'
         }
@@ -74,10 +74,10 @@ class AccountsTest(APITestCase):
 
     def test_create_user_with_no_username(self):
         data = {
-                'username': '',
-                'email': 'foobarbaz@example.com',
-                'password': 'foobar'
-                }
+            'username': '',
+            'email': 'foobarbaz@example.com',
+            'password': 'foobar'
+        }
 
         response = self.client.post(self.create_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -86,10 +86,10 @@ class AccountsTest(APITestCase):
 
     def test_create_user_with_preexisting_username(self):
         data = {
-                'username': 'testuser',
-                'email': 'user@example.com',
-                'password': 'testuser'
-                }
+            'username': 'testuser',
+            'email': 'user@example.com',
+            'password': 'testuser'
+        }
 
         response = self.client.post(self.create_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -111,10 +111,9 @@ class AccountsTest(APITestCase):
     def test_create_user_with_invalid_email(self):
         data = {
             'username': 'foobarbaz',
-            'email':  'testing',
+            'email': 'testing',
             'passsword': 'foobarbaz'
         }
-
 
         response = self.client.post(self.create_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -123,9 +122,9 @@ class AccountsTest(APITestCase):
 
     def test_create_user_with_no_email(self):
         data = {
-                'username' : 'foobar',
-                'email': '',
-                'password': 'foobarbaz'
+            'username': 'foobar',
+            'email': '',
+            'password': 'foobarbaz'
         }
 
         response = self.client.post(self.create_url, data, format='json')
@@ -140,7 +139,7 @@ class AccountsTest(APITestCase):
             'password': 'testpassword'
         }
 
-        response = self.client.post(self.login_url , data, format='json')
+        response = self.client.post(self.login_url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         user = User.objects.get(username='testuser')
@@ -154,7 +153,7 @@ class AccountsTest(APITestCase):
             'password': 'wrongpass'
         }
 
-        response = self.client.post(self.login_url , data, format='json')
+        response = self.client.post(self.login_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_login_user_with_missing_data(self):
@@ -163,23 +162,19 @@ class AccountsTest(APITestCase):
             'username': 'testuser'
         }
 
-        response = self.client.post(self.login_url , data, format='json')
+        response = self.client.post(self.login_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-
-
     def test_logout_user(self):
-
         data = {
             'token': self.token.key
         }
 
         self.assertEqual(Token.objects.filter(user=self.test_user).count(), 1)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
-        response = self.client.post(self.logout_url , data, format='json')
+        response = self.client.post(self.logout_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Token.objects.filter(user=self.test_user).count(), 0)
-
 
     def test_logout_with_invalid_token(self):
 
@@ -189,6 +184,6 @@ class AccountsTest(APITestCase):
 
         self.assertEqual(Token.objects.filter(user=self.test_user).count(), 1)
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + "anytoken")
-        response = self.client.post(self.logout_url , data, format='json')
+        response = self.client.post(self.logout_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Token.objects.filter(user=self.test_user).count(), 1)
