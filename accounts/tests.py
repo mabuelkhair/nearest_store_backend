@@ -7,7 +7,9 @@ from rest_framework.authtoken.models import Token
 
 class AccountsTest(APITestCase):
     def setUp(self):
-        self.test_user = User.objects.create_user('testuser', 'test@example.com', 'testpassword')
+        self.test_user = User.objects.create_user('testuser',
+                                                  'test@example.com',
+                                                  'testpassword')
         self.token, _ = Token.objects.get_or_create(user=self.test_user)
         self.create_url = reverse('register')
         self.login_url = reverse('login')
@@ -18,16 +20,20 @@ class AccountsTest(APITestCase):
         data = {
             'username': 'mostafa',
             'email': 'mostafa@example.com',
-            'password': 'password'
+            'password': 'password',
+            'profile': {'location': {'lat': '20.966400',
+                        'lon': '31.258592'}}
         }
 
         response = self.client.post(self.create_url, data, format='json')
 
         # make sure we have two users in the database.
         self.assertEqual(User.objects.count(), 2)
+        # test user point creation
+        self.assertTrue(User.objects.last().profile)
         # assert returning a 201 created code.
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # return the username and email upon successful creation and no password returned.
+        # return user data on successful creation without returning password.
         self.assertEqual(response.data['username'], data['username'])
         self.assertEqual(response.data['email'], data['email'])
         self.assertFalse('password' in response.data)
@@ -40,7 +46,9 @@ class AccountsTest(APITestCase):
         data = {
             'username': 'foobar',
             'email': 'foobarbaz@example.com',
-            'password': 'foo'
+            'password': 'foo',
+            'profile': {'location': {'lat': '20.966400',
+                        'lon': '31.258592'}}
         }
 
         response = self.client.post(self.create_url, data, format='json')
@@ -52,7 +60,9 @@ class AccountsTest(APITestCase):
         data = {
             'username': 'foobar',
             'email': 'foobarbaz@example.com',
-            'password': ''
+            'password': '',
+            'profile': {'location': {'lat': '20.966400',
+                        'lon': '31.258592'}}
         }
 
         response = self.client.post(self.create_url, data, format='json')
@@ -64,7 +74,9 @@ class AccountsTest(APITestCase):
         data = {
             'username': 'foo' * 30,
             'email': 'foobarbaz@example.com',
-            'password': 'foobar'
+            'password': 'foobar',
+            'profile': {'location': {'lat': '20.966400',
+                        'lon': '31.258592'}}
         }
 
         response = self.client.post(self.create_url, data, format='json')
@@ -76,7 +88,9 @@ class AccountsTest(APITestCase):
         data = {
             'username': '',
             'email': 'foobarbaz@example.com',
-            'password': 'foobar'
+            'password': 'foobar',
+            'profile': {'location': {'lat': '20.966400',
+                        'lon': '31.258592'}}
         }
 
         response = self.client.post(self.create_url, data, format='json')
@@ -84,11 +98,25 @@ class AccountsTest(APITestCase):
         self.assertEqual(User.objects.count(), 1)
         self.assertEqual(len(response.data['username']), 1)
 
+    def test_create_user_without_location(self):
+        data = {
+            'username': 'testtest',
+            'email': 'foobarbaz@example.com',
+            'password': 'foobar'
+        }
+
+        response = self.client.post(self.create_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(len(response.data['profile']), 1)
+
     def test_create_user_with_preexisting_username(self):
         data = {
             'username': 'testuser',
             'email': 'user@example.com',
-            'password': 'testuser'
+            'password': 'testuser',
+            'profile': {'location': {'lat': '20.966400',
+                        'lon': '31.258592'}}
         }
 
         response = self.client.post(self.create_url, data, format='json')
@@ -112,7 +140,9 @@ class AccountsTest(APITestCase):
         data = {
             'username': 'foobarbaz',
             'email': 'testing',
-            'passsword': 'foobarbaz'
+            'passsword': 'foobarbaz',
+            'profile': {'location': {'lat': '20.966400',
+                        'lon': '31.258592'}}
         }
 
         response = self.client.post(self.create_url, data, format='json')
@@ -124,7 +154,9 @@ class AccountsTest(APITestCase):
         data = {
             'username': 'foobar',
             'email': '',
-            'password': 'foobarbaz'
+            'password': 'foobarbaz',
+            'profile': {'location': {'lat': '20.966400',
+                        'lon': '31.258592'}}
         }
 
         response = self.client.post(self.create_url, data, format='json')
@@ -136,7 +168,9 @@ class AccountsTest(APITestCase):
 
         data = {
             'username': 'testuser',
-            'password': 'testpassword'
+            'password': 'testpassword',
+            'profile': {'location': {'lat': '20.966400',
+                        'lon': '31.258592'}}
         }
 
         response = self.client.post(self.login_url, data, format='json')
@@ -150,7 +184,9 @@ class AccountsTest(APITestCase):
 
         data = {
             'username': 'testuser',
-            'password': 'wrongpass'
+            'password': 'wrongpass',
+            'profile': {'location': {'lat': '20.966400',
+                        'lon': '31.258592'}}
         }
 
         response = self.client.post(self.login_url, data, format='json')
